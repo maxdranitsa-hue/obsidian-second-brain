@@ -1,0 +1,209 @@
+{
+  "main": {
+    "id": "6db94d2528c7c4db",
+    "type": "split",
+    "children": [
+      {
+        "id": "8726e36728dad981",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2b7bae0b4ad2fdbf",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "efbb327a462afbad",
+    "type": "split",
+    "children": [
+      {
+        "id": "354a49fbb66448c3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5dd09efaa344c8f3",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "fba354686636e911",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "f1ef7f3a7274518b",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "08d4fbec36ad0c94",
+    "type": "split",
+    "children": [
+      {
+        "id": "b96a3823f4984165",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "331d953cde4227fe",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "blog/2025-01-10-vibe-coding-guide.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 2025-01-10-vibe-coding-guide"
+            }
+          },
+          {
+            "id": "017f2f280e22d964",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "blog/2025-01-10-vibe-coding-guide.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 2025-01-10-vibe-coding-guide"
+            }
+          },
+          {
+            "id": "fc599820da1c5f60",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "43b80aec7b68951c",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "58e21c89c4f3b860",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "blog/2025-01-10-vibe-coding-guide.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 2025-01-10-vibe-coding-guide"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "2b7bae0b4ad2fdbf",
+  "lastOpenFiles": [
+    "thoughts/reflections/self-promotion-working-on.md",
+    "thoughts/reflections/clothing-confidence.md",
+    "thoughts/learnings/discovery-pricing-lesson.md",
+    "thoughts/learnings/ai-value-perception.md",
+    "thoughts/learnings/ai-practical-application-insight.md",
+    "thoughts/ideas/claude-code-agents-content.md",
+    "daily/2026-03-19.md",
+    "daily/2026-03-18.md",
+    "daily/2026-03-17.md",
+    "daily/2026-03-16.md",
+    "thoughts/reflections/thinking-before-answering.md",
+    "thoughts/ideas/lead-generation-plan.md",
+    "templates/daily-template.md",
+    "2026-03-15.md",
+    "thoughts/ideas/ai-diagnostics-bot.md",
+    "daily/2026-03-15.md",
+    "MEMORY.md",
+    "blog/2025-01-10-vibe-coding-guide.md",
+    "blog/2026-01-08-consumer-ai-2030-predictions.md",
+    "goals/0-vision-3y.md",
+    "templates/crm-template.md",
+    "MOC/MOC-ideas.md",
+    "goals/3-weekly.md",
+    "goals/1-yearly-2026.md"
+  ]
+}
