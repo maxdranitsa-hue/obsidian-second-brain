@@ -211,7 +211,7 @@ nano ~/projects/agent-second-brain/.env
 Paste (replace with your values):
 
 ```bash
-TELEGRAM_BOT_TOKEN=7123456789:AAHdN8J2K4m5N6o7P8q9R0s1T2u3V4w5X6y
+TELEGRAM_BOT_TOKEN=YOUR_TELEGRAM_BOT_TOKEN
 DEEPGRAM_API_KEY=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
 TODOIST_API_KEY=
 VAULT_PATH=./vault
