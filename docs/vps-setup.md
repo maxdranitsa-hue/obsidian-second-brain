@@ -152,8 +152,8 @@ cd ~
 mkdir -p projects
 cd projects
 
-git clone https://github.com/smixs/agent-second-brain.git
-cd agent-second-brain
+git clone https://github.com/maxdranitsa-hue/obsidian-second-brain.git
+cd obsidian-second-brain
 
 ls -la
 ```
