@@ -2,6 +2,13 @@
 
 Voice-first personal assistant for capturing thoughts and managing tasks via Telegram.
 
+## FIRST RUN — ЗНАКОМСТВО (проверь ПЕРВЫМ делом)
+
+Если `vault/.claude/skills/dbrain-processor/references/about.md` содержит `[YOUR NAME]` —
+владелец ещё не представлен. Прежде чем делать что-либо ещё, запусти скилл **`onboarding`**
+и проведи живое знакомство. После того как about.md заполнен — эту секцию игнорируй
+и работай как обычно (см. bootstrap ниже).
+
 ## EVERY SESSION BOOTSTRAP
 
 **Before doing anything else, read these files in order:**

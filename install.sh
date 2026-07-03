@@ -1,7 +1,7 @@
 #!/bin/bash
 # Agent Second Brain — One-command installer
 # Works on Mac and Windows WSL
-# https://github.com/smixs/agent-second-brain
+# https://github.com/maxdranitsa-hue/obsidian-second-brain
 
 set -e
 
@@ -13,8 +13,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Config
-REPO_URL="https://github.com/smixs/agent-second-brain.git"
-INSTALL_DIR="$HOME/agent-second-brain"
+REPO_URL="https://github.com/maxdranitsa-hue/obsidian-second-brain.git"
+INSTALL_DIR="$HOME/obsidian-second-brain"
 
 #######################################
 # Print colored message

@@ -163,20 +163,26 @@ ssh -o StrictHostKeyChecking=no -T git@github.com
 
 ---
 
-## Шаг 7. Клонирование и настройка проекта
+## Шаг 7. Клонирование проекта
+
+Клонируй **СВОЙ форк** (не шаблон!) — в нём уже лежат твои данные, заполненные в день 1
+(about.md, goals, MEMORY). Так второй мозг переезжает на сервер вместе с личностью.
 
 ```bash
 cd /root
-git clone https://github.com/maxdranitsa-hue/agent-second-brain
-cd agent-second-brain
-
-# Меняем remote на свой приватный репозиторий
-git remote set-url origin git@github.com:YOUR_GITHUB_USERNAME/second-brain.git
+git clone git@github.com:YOUR_GITHUB_USERNAME/obsidian-second-brain.git second-brain
+cd second-brain
 ```
+
+> Если в день 1 ничего не заполнял локально — ничего страшно: онбординг-скилл
+> запустится при первом `claude` на сервере и проведёт знакомство сам.
 
 ---
 
-## Шаг 8. Заполни личные файлы
+## Шаг 8. Заполни личные файлы (пропусти, если переехал с готового форка)
+
+Этот шаг нужен, только если начинаешь с чистого шаблона.
+Если клонировал свой форк с данными дня 1 — файлы уже заполнены, переходи к Шагу 9.
 
 ### .env
 ```bash
