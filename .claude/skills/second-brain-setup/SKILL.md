@@ -1,254 +1,167 @@
 ---
 name: second-brain-setup
-description: "Полная установка Agent Second Brain: VPS, бот, Obsidian, все интеграции"
+description: "Переезд второго мозга на VPS: клон личного репо участника, перенос .env, systemd-бот 24/7 + синхра vault в GitHub"
 disable-model-invocation: true
-argument-hint: "IP сервера и путь к SSH ключу"
+argument-hint: "IP сервера, root-пароль, URL приватного репо участника"
 ---
 
-Ты помогаешь установить систему Agent Second Brain на VPS с нуля.
+Ты помогаешь **не-технарю** перенести его второй мозг с ноутбука на VPS. Веди по шагам, тепло и просто.
+**Команды выполняй сам.** У человека спрашивай только данные и подтверждения — по одному. После каждого шага коротко скажи, что сделал и что дальше. Если шаг падает — объясни простыми словами и не иди дальше, пока не пройдёт.
 
 ## Входные данные
 $ARGUMENTS
 
----
+Ожидаешь три вещи (спроси, чего не хватает):
+- **IP сервера** (свежий дроплет DigitalOcean, Ubuntu 22.04)
+- **root-пароль** (из письма DO / из UI при создании)
+- **URL приватного репо участника** (создан на прошлом шаге, вида `git@github.com:USERNAME/second-brain.git` или `https://github.com/USERNAME/second-brain`)
 
-# Agent Second Brain — Полная установка
-
-## Что будет установлено
-- Ubuntu VPS с базовой безопасностью
-- Python 3.12, Node.js 20, UV, Claude Code CLI
-- Telegram-бот который принимает голосовые/текст/фото
-- Obsidian vault на сервере (база знаний)
-- Интеграции: Deepgram (расшифровка голоса), Todoist (задачи)
-- Автозапуск через systemd
-- Локальный просмотр через Git + Obsidian на Mac
+Скилл запускается **на Mac участника**, в папке его локального проекта дня 1 — поэтому у тебя есть доступ к его локальному `.env` и данным. Это важно: `.env` переносим именно отсюда.
 
 ---
 
-## Шаг 0. Подготовка на Mac
+# Переезд второго мозга на VPS
 
-### SSH ключ для сервера
+**Итог:** бот работает 24/7 на сервере · vault выгружается в приватный GitHub каждые 30 мин · Obsidian на Mac показывает заметки. Ровно архитектура «мозг в трёх местах».
+
+---
+
+## Шаг 1. Беспарольный доступ к серверу (root)
+
+Убедись, что у Mac есть SSH-ключ (если нет — создай):
 ```bash
-ssh-keygen -t ed25519 -f ~/.ssh/obsidianssh
-# Введи passphrase или оставь пустым
-pbcopy < ~/.ssh/obsidianssh.pub
-```
-Публичный ключ скопирован — добавь его в DigitalOcean при создании Droplet.
-
-### Создание Droplet на DigitalOcean
-- Ubuntu 22.04 LTS
-- Basic → Regular → $6/мес (1 vCPU, 1GB RAM)
-- Регион: Frankfurt или Amsterdam
-- Authentication: SSH Key (вставь скопированный ключ)
-- Hostname: second-brain
-
----
-
-## Шаг 1. Подключение к серверу
-
-```bash
-# Добавь ключ в агент (если задавал passphrase)
-ssh-add ~/.ssh/obsidianssh
-
-# Подключись
-ssh -i ~/.ssh/obsidianssh root@YOUR_SERVER_IP
+[ -f ~/.ssh/id_ed25519.pub ] || ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519
 ```
 
+Залей публичный ключ Mac на сервер, используя root-пароль (через askpass, без sshpass):
+```bash
+ASK=$(mktemp); printf '#!/bin/bash\necho "%s"\n' "$ROOT_PASSWORD" > "$ASK"; chmod +x "$ASK"
+SSH_ASKPASS="$ASK" SSH_ASKPASS_REQUIRE=force DISPLAY=:0 \
+  ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@$IP \
+  "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys" < ~/.ssh/id_ed25519.pub
+rm -f "$ASK"
+```
+Проверь, что дальше root заходит **без пароля**:
+```bash
+ssh -o StrictHostKeyChecking=no root@$IP 'echo OK'   # → OK
+```
+Дальше все команды на сервере — через `ssh root@$IP '...'`.
+
 ---
 
-## Шаг 2. Базовая настройка сервера
-
-Выполни на сервере:
+## Шаг 2. Базовая безопасность
 
 ```bash
-# Обновление системы
-apt update && apt upgrade -y
-
-# Создание пользователя deploy
-adduser --disabled-password --gecos "" deploy
+ssh root@$IP 'bash -s' <<'EOF'
+apt update
+adduser --disabled-password --gecos "" deploy 2>/dev/null || true
 usermod -aG sudo deploy
-
-# Копирование SSH ключа для deploy
-mkdir -p /home/deploy/.ssh
-cp ~/.ssh/authorized_keys /home/deploy/.ssh/
-chown -R deploy:deploy /home/deploy/.ssh
-chmod 700 /home/deploy/.ssh
-chmod 600 /home/deploy/.ssh/authorized_keys
-
-# NOPASSWD для deploy (важно — до отключения root!)
-echo "deploy ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/deploy
-chmod 440 /etc/sudoers.d/deploy
-
-# Firewall
-ufw allow OpenSSH
-ufw allow 80
-ufw allow 443
-ufw --force enable
+mkdir -p /home/deploy/.ssh && cp /root/.ssh/authorized_keys /home/deploy/.ssh/
+chown -R deploy:deploy /home/deploy/.ssh && chmod 700 /home/deploy/.ssh && chmod 600 /home/deploy/.ssh/authorized_keys
+echo "deploy ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/deploy && chmod 440 /etc/sudoers.d/deploy
+ufw allow OpenSSH && ufw allow 80 && ufw allow 443 && ufw --force enable
+EOF
 ```
-
-> ⚠️ Не отключай root-логин до завершения всей настройки
+> Не отключай root-логин до конца настройки.
 
 ---
 
-## Шаг 3. Установка стека разработки
+## Шаг 3. Стек
 
 ```bash
-# build-essential + Python 3.12
+ssh root@$IP 'bash -s' <<'EOF'
 apt install -y build-essential python3.12 python3.12-venv python3.12-dev
-
-# Node.js 20.x
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt install -y nodejs
-
-# UV (менеджер Python-пакетов)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Claude Code CLI
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt install -y nodejs
+sudo -iu deploy bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
 npm install -g @anthropic-ai/claude-code
-```
-
-### Проверка
-```bash
-python3.12 --version   # Python 3.12.x
-node --version         # v20.x.x
-~/.local/bin/uv --version
-claude --version
+EOF
+ssh root@$IP 'node -v; claude --version; sudo -iu deploy /home/deploy/.local/bin/uv --version'
 ```
 
 ---
 
-## Шаг 4. Получи 4 API ключа
+## Шаг 4. Deploy-ключ сервера → в репо участника
 
-| Сервис | Где взять | Зачем |
-|--------|-----------|-------|
-| Telegram Bot Token | @BotFather → /newbot | Бот в Telegram |
-| Твой Telegram ID | @userinfobot | Доступ к боту |
-| Deepgram API Key | console.deepgram.com | Расшифровка голоса |
-| Todoist API Token | Todoist → Settings → Integrations → Developer | Управление задачами |
-
----
-
-## Шаг 5. Создай приватный репозиторий на GitHub
-
-1. github.com → **+** → **New repository**
-2. Название: `second-brain`
-3. Тип: **Private**
-4. Нажми **Create repository**
-
----
-
-## Шаг 6. SSH ключ для GitHub на сервере
-
+Генерируем на сервере ключ и настраиваем git для github:
 ```bash
-# Генерация ключа
-ssh-keygen -t ed25519 -C 'github-second-brain' -f ~/.ssh/github -N ''
-cat ~/.ssh/github.pub
-
-# Настройка SSH config
-cat > ~/.ssh/config << 'EOF'
+ssh root@$IP 'sudo -iu deploy bash -s' <<'EOF'
+[ -f ~/.ssh/github ] || ssh-keygen -t ed25519 -C 'second-brain-deploy' -f ~/.ssh/github -N ''
+cat > ~/.ssh/config <<CFG
 Host github.com
   HostName github.com
   User git
   IdentityFile ~/.ssh/github
-EOF
+  StrictHostKeyChecking no
+CFG
 chmod 600 ~/.ssh/config
-
-# Тест подключения
-ssh -o StrictHostKeyChecking=no -T git@github.com
-```
-
-Добавь публичный ключ в GitHub:
-→ Репозиторий → **Settings** → **Deploy keys** → **Add deploy key**
-→ Поставь галочку **Allow write access**
-
----
-
-## Шаг 7. Клонирование проекта
-
-Клонируй **СВОЙ форк** (не шаблон!) — в нём уже лежат твои данные, заполненные в день 1
-(about.md, goals, MEMORY). Так второй мозг переезжает на сервер вместе с личностью.
-
-```bash
-cd /root
-git clone git@github.com:YOUR_GITHUB_USERNAME/obsidian-second-brain.git second-brain
-cd second-brain
-```
-
-> Если в день 1 ничего не заполнял локально — ничего страшно: онбординг-скилл
-> запустится при первом `claude` на сервере и проведёт знакомство сам.
-
----
-
-## Шаг 8. Заполни личные файлы (пропусти, если переехал с готового форка)
-
-Этот шаг нужен, только если начинаешь с чистого шаблона.
-Если клонировал свой форк с данными дня 1 — файлы уже заполнены, переходи к Шагу 9.
-
-### .env
-```bash
-cat > .env << 'EOF'
-TELEGRAM_BOT_TOKEN=ВАШ_ТОКЕН
-DEEPGRAM_API_KEY=ВАШ_КЛЮЧ
-TODOIST_API_KEY=ВАШ_КЛЮЧ
-VAULT_PATH=./vault
-ALLOWED_USER_IDS=[ВАШ_TELEGRAM_ID]
+echo "=== ПУБЛИЧНЫЙ КЛЮЧ (добавь в репо) ==="
+cat ~/.ssh/github.pub
 EOF
 ```
-
-### О себе — `vault/.claude/skills/dbrain-processor/references/about.md`
-Заполни:
-- Имя, возраст, роль, компания
-- Чем занимаешься
-- Команда
-- Часовой пояс и рабочие часы
-- Ключевые клиенты/проекты
-
-### Классификация — `vault/.claude/skills/dbrain-processor/references/classification.md`
-Настрой под свои рабочие домены:
-- Типы задач (продажи, проекты, операционка и т.д.)
-- Ключевые слова для каждого типа
-- Куда сохранять (Todoist, ideas, learnings и т.д.)
-
-### Цели — `vault/goals/`
-- `0-vision-3y.md` — видение на 3 года
-- `1-yearly-YYYY.md` — цели на год
-- `2-monthly.md` — фокус на месяц
-- `3-weekly.md` — фокус на неделю
-
----
-
-## Шаг 9. Установка зависимостей
-
+Возьми выведенный ключ и добавь его участнику в репо:
+**GitHub → его репозиторий → Settings → Deploy keys → Add deploy key → вставить → ✅ Allow write access.**
+Спроси участника подтверждение, что добавил, прежде чем идти дальше. Проверь:
 ```bash
-cd /root/agent-second-brain
-~/.local/bin/uv sync
+ssh root@$IP 'sudo -iu deploy ssh -o StrictHostKeyChecking=no -T git@github.com'  # → "Hi USERNAME! ..."
 ```
 
 ---
 
-## Шаг 10. Первый коммит в свой репозиторий
+## Шаг 5. Клон ЕГО репо (с его данными дня 1)
 
 ```bash
-git config user.email "your@email.com"
-git config user.name "Your Name"
-git add -A
-git commit -m "Personal setup"
-git push origin main
+ssh root@$IP "sudo -iu deploy git clone $REPO_SSH_URL /home/deploy/agent-second-brain"
+```
+> `$REPO_SSH_URL` — обязательно `git@github.com:USERNAME/second-brain.git` (SSH, не https), чтобы работал deploy-ключ.
+> В репо уже лежат about.md, goals, MEMORY и заметки — личность мозга переезжает вместе с ними.
+
+---
+
+## Шаг 6. Перенос `.env` с Mac на сервер
+
+`.env` в git не коммитится (токены) — копируем из локальной папки участника:
+```bash
+scp ./.env deploy@$IP:/home/deploy/agent-second-brain/.env
+ssh root@$IP 'chown deploy:deploy /home/deploy/agent-second-brain/.env && chmod 600 /home/deploy/agent-second-brain/.env'
+```
+Если локального `.env` нет (день 1 не заполняли) — собери 4 ключа заново по одному (Telegram Bot Token, Telegram ID, Deepgram, Todoist) и запиши в `.env` на сервере в формате:
+```
+TELEGRAM_BOT_TOKEN=...
+DEEPGRAM_API_KEY=...
+TODOIST_API_KEY=...
+VAULT_PATH=./vault
+ALLOWED_USER_IDS=[...]
 ```
 
 ---
 
-## Шаг 11. Systemd сервис
+## Шаг 7. Зависимости + авторизация Claude на сервере
 
 ```bash
-# Создаём пользователя deploy с проектом
-cp -r /root/agent-second-brain /home/deploy/agent-second-brain
-cp -r /root/.local /home/deploy/.local
-chown -R deploy:deploy /home/deploy/agent-second-brain
-chown -R deploy:deploy /home/deploy/.local
+ssh root@$IP 'sudo -iu deploy bash -c "cd ~/agent-second-brain && ~/.local/bin/uv sync"'
+```
+Авторизуй Claude CLI под `deploy` (нужно для daily-обработки) — долгоживущим токеном:
+```bash
+ssh -t root@$IP 'sudo -iu deploy claude setup-token'
+```
+Пройди вход в браузере, скопируй токен `sk-ant-oat01-…` и пропиши его в systemd drop-in:
+```bash
+ssh root@$IP "mkdir -p /etc/systemd/system/second-brain.service.d && \
+cat > /etc/systemd/system/second-brain.service.d/claude-token.conf <<'CONF'
+[Service]
+Environment=CLAUDE_CODE_OAUTH_TOKEN=ВСТАВЬ_ТОКЕН
+CONF
+chmod 600 /etc/systemd/system/second-brain.service.d/claude-token.conf"
+```
 
-# Создаём systemd service
-cat > /etc/systemd/system/second-brain.service << 'EOF'
+---
+
+## Шаг 8. systemd: бот 24/7 + синхра vault каждые 30 мин
+
+```bash
+ssh root@$IP 'bash -s' <<'EOF'
+# --- бот ---
+cat > /etc/systemd/system/second-brain.service <<'SVC'
 [Unit]
 Description=Second Brain Telegram Bot
 After=network.target
@@ -266,67 +179,80 @@ EnvironmentFile=/home/deploy/agent-second-brain/.env
 
 [Install]
 WantedBy=multi-user.target
-EOF
+SVC
+
+# --- синхра vault → GitHub (использует scripts/git-sync.sh из репо) ---
+chmod +x /home/deploy/agent-second-brain/scripts/git-sync.sh
+cat > /etc/systemd/system/vault-sync.service <<'SVC'
+[Unit]
+Description=Vault Git Sync
+
+[Service]
+Type=oneshot
+User=deploy
+Environment=HOME=/home/deploy
+ExecStart=/home/deploy/agent-second-brain/scripts/git-sync.sh
+SVC
+cat > /etc/systemd/system/vault-sync.timer <<'TMR'
+[Unit]
+Description=Vault sync every 30 min
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+
+[Install]
+WantedBy=timers.target
+TMR
+
+# на сервере тоже задать git-идентичность, чтобы коммиты синхры не падали
+sudo -iu deploy bash -c 'cd ~/agent-second-brain && git config user.email "bot@second-brain" && git config user.name "second-brain"'
 
 systemctl daemon-reload
-systemctl enable second-brain
-systemctl start second-brain
-systemctl status second-brain
+systemctl enable --now second-brain.service
+systemctl enable --now vault-sync.timer
+systemctl is-active second-brain.service
+EOF
 ```
 
 ---
 
-## Шаг 12. Авторизация Claude Code
+## Шаг 9. Проверка
 
-**Критически важно!** Бот использует Claude CLI — его нужно авторизовать от имени deploy:
-
-```bash
-# На своём Mac подключись как deploy
-ssh -i ~/.ssh/obsidianssh deploy@YOUR_SERVER_IP
-
-# Авторизуй Claude
-claude /login
-```
-
-Пройди авторизацию через браузер. После этого перезапусти сервис:
-```bash
-# Из root SSH сессии
-systemctl restart second-brain
-```
+1. Участник пишет своему боту в Telegram голосовое или текст → бот отвечает **с сервера**.
+2. Логи, если тишина: `ssh root@$IP 'journalctl -u second-brain -n 40 --no-pager'`
+3. Проверь синхру: `ssh root@$IP 'sudo -iu deploy /home/deploy/agent-second-brain/scripts/git-sync.sh'` → должен запушить.
 
 ---
 
-## Шаг 13. Obsidian на Mac
+## Шаг 10. Выключаем локального бота
 
+Чтобы не было двух ботов на одном токене (конфликт polling):
 ```bash
-# Клонируй vault локально
-git clone https://github.com/YOUR_USERNAME/second-brain.git ~/second-brain
+launchctl unload ~/Library/LaunchAgents/*second-brain*.plist 2>/dev/null || true
+launchctl unload ~/Library/LaunchAgents/*voicememos*.plist 2>/dev/null || true
 ```
-
-1. Установи Obsidian с obsidian.md
-2. **Open folder as vault** → выбери `~/second-brain/vault`
-
-### Обновление vault
-```bash
-cd ~/second-brain && git pull
-```
+Если бот дня 1 крутился просто в терминале — попроси участника закрыть то окно (Ctrl+C).
 
 ---
 
-## Проверка работы
+## Шаг 11. Mac становится окном (Obsidian)
 
-1. Напиши боту любое сообщение → должен ответить "Сохранено"
-2. Отправь голосовое → должен расшифровать и сохранить
-3. Нажми `/process` → Claude обработает и ответит отчётом
+Локальная папка участника уже указывает на его репо — просто обновляем:
+```bash
+git pull
+```
+Открой Obsidian → **Open folder as vault** → папка `vault/`. Теперь: пишешь боту с телефона → сервер сохраняет → через 30 мин `git pull` → заметка в Obsidian.
 
 ---
 
-## Ежедневное использование
+## Готово
 
-| Действие | Что делать |
-|----------|-----------|
-| Задача с дедлайном | Голосовое/текст боту → уйдёт в Todoist |
-| Идея | Текст боту → сохранится в thoughts/ideas/ |
-| После встречи | Голосовое → CRM-карточка клиента |
-| Обработка за день | /process → отчёт + задачи |
-| Обновить Obsidian на Mac | cd ~/second-brain && git pull |
+У участника: бот в облаке 24/7 · приватный GitHub-хаб · Obsidian на Mac. Ноут можно закрыть.
+
+## Частые затыки
+- **root просит пароль после Шага 1** → ключ не залился; повтори Шаг 1, проверь `PubkeyAuthentication=no` в первой команде.
+- **`git clone` Permission denied** → deploy-ключ не добавлен в репо или без write access (Шаг 4).
+- **Бот отвечает дважды** → локальный не выключен (Шаг 10).
+- **`second-brain.service` inactive** → `journalctl -u second-brain -n 50`; чаще всего пустой `.env` или не прошёл `uv sync`.
+- **daily-обработка не идёт / 401** → протух токен Claude; повтори Шаг 7 (`claude setup-token`) и обнови drop-in.
