@@ -51,7 +51,7 @@ Full content of the thought.
 
 ## Related
 - [[Link to related note]]
-- [[goals/1-yearly-2025#Section]]
+- [[goals/1-yearly-2026#Section]]
 ```
 
 ## Tags Convention
@@ -79,7 +79,7 @@ When saving a thought:
 Example:
 ```markdown
 Extracted from [[daily/2024-12-20]].
-Related to [[Voice Agents]] and [[goals/1-yearly-2025#AI Development]].
+Related to [[Voice Agents]] and [[goals/1-yearly-2026#AI Development]].
 ```
 
 ## Category Guidelines

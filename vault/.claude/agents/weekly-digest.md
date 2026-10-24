@@ -30,7 +30,7 @@ Analyzes the past week and generates comprehensive digest report.
 
 3. **Get current goals:**
    ```
-   Read goals/1-yearly-2025.md
+   Read goals/1-yearly-2026.md
    Read goals/2-monthly.md
    Read goals/3-weekly.md
    ```

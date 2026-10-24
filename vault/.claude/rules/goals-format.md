@@ -11,7 +11,7 @@ Rules for goal files in `goals/` folder.
 ```
 goals/
 ├── 0-vision-3y.md   # 3-year vision by life areas
-├── 1-yearly-2025.md # Annual goals with quarterly breakdown
+├── 1-yearly-2026.md # Annual goals with quarterly breakdown
 ├── 2-monthly.md     # Current month priorities
 └── 3-weekly.md      # This week's focus + ONE Big Thing
 ```
@@ -81,7 +81,7 @@ This is read by dbrain-processor for context.
 When creating tasks, reference goals:
 
 ```markdown
-- [ ] [Task] — Связь: [[1-yearly-2025#Career]]
+- [ ] [Task] — Связь: [[1-yearly-2026#Career]]
 ```
 
 ## Stale Goal Warning

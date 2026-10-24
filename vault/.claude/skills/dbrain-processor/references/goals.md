@@ -11,7 +11,7 @@ Before processing daily entries:
 
 2. **Read yearly goals:**
    ```
-   Read goals/1-yearly-2025.md → Know active goals by area
+   Read goals/1-yearly-2026.md → Know active goals by area
    ```
 
 3. **Check monthly priorities:**
@@ -51,11 +51,11 @@ If task aligns with goals, consider priority bump:
 When saving to thoughts/:
 
 1. **Check goal relevance:**
-   - Scan goals/1-yearly-2025.md for matching areas
+   - Scan goals/1-yearly-2026.md for matching areas
    - If matches → add link in frontmatter:
      ```yaml
      related:
-       - "[[goals/1-yearly-2025#Career & Business]]"
+       - "[[goals/1-yearly-2026#Career & Business]]"
      ```
 
 2. **Tag with goal area:**
@@ -98,7 +98,7 @@ Look for pattern:
 > [THE ONE THING]
 ```
 
-### 1-yearly-2025.md — Find Active Goals
+### 1-yearly-2026.md — Find Active Goals
 
 Look for tables:
 ```markdown

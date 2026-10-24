@@ -19,7 +19,7 @@ Ensures tasks and goals stay in sync.
 
 ```
 Read goals/0-vision-3y.md → Life areas
-Read goals/1-yearly-2025.md → Yearly goals
+Read goals/1-yearly-2026.md → Yearly goals
 Read goals/2-monthly.md → Monthly priorities
 Read goals/3-weekly.md → ONE Big Thing
 ```

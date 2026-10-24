@@ -39,7 +39,7 @@ Find related entries.
 Check if thought relates to goals:
 
 ```
-Read goals/1-yearly-2025.md
+Read goals/1-yearly-2026.md
 Find matching goal areas
 ```
 
@@ -112,7 +112,7 @@ In related notes, add backlink to new note if highly relevant.
 
 ### Link to Goals
 ```markdown
-[[goals/1-yearly-2025#Career & Business]]
+[[goals/1-yearly-2026#Career & Business]]
 [[goals/3-weekly]] — ONE Big Thing
 ```
 
@@ -174,13 +174,13 @@ New thought: "Chatterbox TTS can be used for voice agents"
    - MOC-learnings.md has "AI & Voice" section
 
 3. **Goals:**
-   - 1-yearly-2025.md has "AI Development" goal
+   - 1-yearly-2026.md has "AI Development" goal
 
 4. **Create links:**
    ```yaml
    related:
      - "[[thoughts/ideas/voice-agents-architecture.md]]"
-     - "[[goals/1-yearly-2025#AI Development]]"
+     - "[[goals/1-yearly-2026#AI Development]]"
    ```
 
 5. **Update MOC-learnings.md:**
